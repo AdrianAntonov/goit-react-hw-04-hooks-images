@@ -1,96 +1,56 @@
 import { useState, useEffect } from 'react';
 // import { toast } from 'react-toastify';
 import PropTypes from 'prop-types';
-import axios from 'axios';
+import Services from '../../Services';
 import Loader from 'react-loader-spinner';
 import Button from '../Button';
 import ImageGalleryItem from '../ImageGalleryItem';
 
-const KEY = '23540624-9aec9adb1c30af208be906523';
-
 function ImageGallery({ searchValue }) {
-  console.log('ImageGalery');
-  // state = {
-  //   images: [],
-  //   page: 1,
-  //   scroll: false,
-  //   error: '',
-  //   status: 'idle',
-  // };
-
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
   const [scroll, setScroll] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('idle');
 
-  // componentDidUpdate(prevProps, prevState) {
-  //   if (prevProps.searchValue !== this.props.searchValue) {
-  //     this.setState({ status: 'pending', images: [], scroll: false });
-
-  //     this.fetchingData();
-  //   }
-  // }
-  // useEffect(() => {
-  //   console.log('effect searchValue');
-  //   setStatus('pending');
-  //   fetchingData();
-  // }, [searchValue]);
-
-  console.log(scroll);
-
-  useEffect(() => {
-    if (searchValue === '') {
-      return;
-    }
-    console.log('useEffect');
-    fetchingData();
-    setStatus('pending');
-    // setImages([]);
-    setScroll(false);
-  }, [searchValue]);
-
   const handleScroll = () => {
+    setScroll(true);
+    setPage(prevPage => prevPage + 1);
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
     });
   };
 
-  const handleButton = () => {
-    setScroll(true);
-    fetchingData();
-    // console.log('button click');
-  };
+  useEffect(() => {
+    if (searchValue === '') {
+      return;
+    }
 
-  const fetchingData = () => {
-    console.log('fetching');
-    axios
-      .get(
-        `https://pixabay.com/api/?q=${searchValue}&page=${page}&key=${KEY}&image_type=photo&orientation=horizontal&per_page=12`,
-      )
+    setScroll(false);
+    Services.fetching(searchValue, page)
       .then(response => {
-        console.log('response');
         if (response.data.hits.length === 0) {
           // toast('Not valid input! Try again!');
           alert('Not valid input! Try again!');
         }
+        setStatus('pending');
 
         setImages(prevImages => [...prevImages, ...response.data.hits]);
-        setPage(prevPage => prevPage + 1);
-        setStatus('resolved');
-        setScroll(true);
 
-        if (scroll) {
-          console.log('scroll');
-          handleScroll();
-        }
+        setStatus('resolved');
+
+        scroll &&
+          window.scrollBy({
+            top: document.documentElement.clientHeight - 160,
+            behavior: 'smooth',
+          });
       })
       .catch(error => {
         setError(error);
         setStatus('rejected');
       });
-  };
+  }, [page, scroll, searchValue]);
 
   if (status === 'idle') {
     return null;
@@ -109,7 +69,7 @@ function ImageGallery({ searchValue }) {
   }
 
   if (status === 'rejected') {
-    return <h2>{error}</h2>;
+    return <h2>{error.message}</h2>;
   }
 
   if (status === 'resolved') {
@@ -129,7 +89,7 @@ function ImageGallery({ searchValue }) {
 
         {images.length > 0 && (
           <div className="DivButton">
-            <Button data={handleButton} />
+            <Button data={handleScroll} />
           </div>
         )}
       </div>

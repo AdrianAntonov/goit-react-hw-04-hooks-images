@@ -9,38 +9,36 @@ import ImageGalleryItem from '../ImageGalleryItem';
 function ImageGallery({ searchValue }) {
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
-  const [scroll, setScroll] = useState(false);
+  // const [scroll, setScroll] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('idle');
 
-  const handleScroll = () => {
-    setScroll(true);
-    setPage(prevPage => prevPage + 1);
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth',
-    });
-  };
+  // const handleScroll = () => {
+  //   setScroll(true);
+  //   setPage(prevPage => prevPage + 1);
+  // };
 
   useEffect(() => {
     if (searchValue === '') {
       return;
     }
+    setImages([]);
+    setStatus('pending');
 
-    setScroll(false);
+    // setScroll(false);
+
     Services.fetching(searchValue, page)
       .then(response => {
         if (response.data.hits.length === 0) {
           // toast('Not valid input! Try again!');
           alert('Not valid input! Try again!');
         }
-        setStatus('pending');
 
         setImages(prevImages => [...prevImages, ...response.data.hits]);
 
         setStatus('resolved');
 
-        scroll &&
+        page > 1 &&
           window.scrollBy({
             top: document.documentElement.clientHeight - 160,
             behavior: 'smooth',
@@ -50,7 +48,7 @@ function ImageGallery({ searchValue }) {
         setError(error);
         setStatus('rejected');
       });
-  }, [page, scroll, searchValue]);
+  }, [page, searchValue]);
 
   if (status === 'idle') {
     return null;
@@ -89,7 +87,7 @@ function ImageGallery({ searchValue }) {
 
         {images.length > 0 && (
           <div className="DivButton">
-            <Button data={handleScroll} />
+            <Button data={() => setPage(prevPage => prevPage + 1)} />
           </div>
         )}
       </div>

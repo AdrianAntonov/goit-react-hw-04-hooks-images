@@ -1,17 +1,15 @@
 import { useState } from 'react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import PropTypes from 'prop-types';
 import '../styles.css';
 
 function Searchbar({ onSubmit }) {
-  // state = {
-  //   inputValue: '',
-  // };
-
   const [inputValue, setInputValue] = useState('');
 
   const handleOnSubmit = e => {
     if (inputValue.trim() === '') {
-      alert('Wrong input!');
+      toast('Not valid input! Try again!');
       return;
     }
     e.preventDefault();
@@ -20,7 +18,6 @@ function Searchbar({ onSubmit }) {
   };
 
   const handleChange = e => {
-    // this.setState({ inputValue: e.target.value });
     setInputValue(e.target.value);
   };
 

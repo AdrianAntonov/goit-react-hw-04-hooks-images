@@ -1,48 +1,50 @@
 import { useState, useEffect } from 'react';
-// import { toast } from 'react-toastify';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import PropTypes from 'prop-types';
 import Services from '../../Services';
-import Loader from 'react-loader-spinner';
+import LoaderComponent from '../Loader/Loader';
 import Button from '../Button';
 import ImageGalleryItem from '../ImageGalleryItem';
 
 function ImageGallery({ searchValue }) {
   const [images, setImages] = useState([]);
   const [page, setPage] = useState(1);
-  // const [scroll, setScroll] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('idle');
 
-  // const handleScroll = () => {
-  //   setScroll(true);
-  //   setPage(prevPage => prevPage + 1);
-  // };
+  useEffect(() => {
+    setPage(1);
+    setImages([]);
+  }, [searchValue]);
 
   useEffect(() => {
     if (searchValue === '') {
       return;
     }
-    setImages([]);
-    setStatus('pending');
-
-    // setScroll(false);
+    if (page === 1) {
+      setStatus('pending');
+    }
 
     Services.fetching(searchValue, page)
       .then(response => {
         if (response.data.hits.length === 0) {
-          // toast('Not valid input! Try again!');
-          alert('Not valid input! Try again!');
+          toast('Not valid input! Try again!');
         }
-
-        setImages(prevImages => [...prevImages, ...response.data.hits]);
+        if (page === 1) {
+          setImages([...response.data.hits]);
+        } else {
+          setImages(prevImages => [...prevImages, ...response.data.hits]);
+        }
 
         setStatus('resolved');
 
-        page > 1 &&
-          window.scrollBy({
-            top: document.documentElement.clientHeight - 160,
+        if (page > 1) {
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
             behavior: 'smooth',
           });
+        }
       })
       .catch(error => {
         setError(error);
@@ -54,16 +56,7 @@ function ImageGallery({ searchValue }) {
     return null;
   }
   if (status === 'pending') {
-    return (
-      <Loader
-        type="ThreeDots"
-        color="#00BFFF"
-        height={100}
-        width={100}
-        timeout={3000}
-        className="Loader"
-      />
-    );
+    return <LoaderComponent />;
   }
 
   if (status === 'rejected') {

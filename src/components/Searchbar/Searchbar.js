@@ -10,7 +10,6 @@ function Searchbar({ onSubmit }) {
   const handleOnSubmit = e => {
     if (inputValue.trim() === '') {
       toast('Not valid input! Try again!');
-      return;
     }
     e.preventDefault();
     onSubmit(inputValue);
